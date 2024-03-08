@@ -314,3 +314,5 @@ If you use the original [pix2pix](https://phillipi.github.io/pix2pix/) and [Cycl
 
 ### Acknowledgments
 We thank Allan Jabri and Phillip Isola for helpful discussion and feedback. Our code is developed based on [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix). We also thank [pytorch-fid](https://github.com/mseitzer/pytorch-fid) for FID computation,  [drn](https://github.com/fyu/drn) for mIoU computation, and [stylegan2-pytorch](https://github.com/rosinality/stylegan2-pytorch/) for the PyTorch implementation of StyleGAN2 used in our single-image translation setting.
+#   c u t _ m o d e l _ t o 1 6 T I F  
+ 
