@@ -4,6 +4,7 @@ It also includes common transformation functions (e.g., get_transform, __scale_w
 """
 import random
 import numpy as np
+import torch
 import torch.utils.data as data
 from PIL import Image
 import torchvision.transforms as transforms
@@ -124,6 +125,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
 
     if convert:
         transform_list += [transforms.ToTensor()]
+        # transform_list += [transforms.Lambda(lambda img: torch.from_numpy(np.array(img)).to(torch.uint16))]
         if grayscale:
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:

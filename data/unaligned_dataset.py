@@ -109,6 +109,8 @@ class UnalignedDataset(BaseDataset):
 
         # 16비트 이미지를 0에서 1 사이의 부동소수점으로 스케일링
         self.img_array = self.img_array.astype(np.float32) / 65535.0
+        # 이미지 데이터를 uint16변경  pytorch에서 지원을 안해줘서 구현 방법은 더 생각을 해봐야 할 것 같다.
+        # self.img_array = self.img_array.astype(np.uint16)
 
         self.original_path = imgPath
         self.height, self.width, self.bands = self.img_array.shape
