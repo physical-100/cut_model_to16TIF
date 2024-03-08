@@ -1,10 +1,14 @@
 import os.path
+
+from osgeo import gdal
+#for TIF
 from data.base_dataset import BaseDataset, get_transform
 from data.image_folder import make_dataset
 from PIL import Image
 import random
 import util.util as util
-
+import numpy as np
+import torch
 
 class UnalignedDataset(BaseDataset):
     """
@@ -55,8 +59,17 @@ class UnalignedDataset(BaseDataset):
         else:   # randomize the index for domain B to avoid fixed pairs.
             index_B = random.randint(0, self.B_size - 1)
         B_path = self.B_paths[index_B]
-        A_img = Image.open(A_path).convert('RGB')
-        B_img = Image.open(B_path).convert('RGB')
+
+        # A_img = Image.open(A_path).convert('RGB')
+        # B_img = Image.open(B_path).convert('RGB')
+        # TIF 이미지 처리
+        A_img_array = self.tiff_open(A_path)
+        B_img_array = self.tiff_open(B_path)
+
+        # 이미지를 PIL 이미지로 변환 (필요한 경우)
+        A_img = Image.fromarray((A_img_array * 255).astype(np.uint8))
+        B_img = Image.fromarray((B_img_array * 255).astype(np.uint8))
+
 
         # Apply image transformation
         # For CUT/FastCUT mode, if in finetuning phase (learning rate is decaying),
@@ -76,3 +89,27 @@ class UnalignedDataset(BaseDataset):
         we take a maximum of
         """
         return max(self.A_size, self.B_size)
+
+    def tiff_open(self, imgPath):
+        self.imgPath = imgPath
+        self.image = gdal.Open(self.imgPath)
+        num_bands = self.image.RasterCount
+
+        # 이미지가 1개 또는 3개의 밴드를 가지고 있는지 확인
+        if num_bands == 1:
+            # 단일 밴드 이미지를 3채널 이미지로 복제
+            band = self.image.GetRasterBand(1).ReadAsArray()
+            self.img_array = np.stack([band, band, band], axis=2)
+        elif num_bands == 3:
+            # 3채널 이미지를 로드하고 각 채널을 스택
+            bands = [self.image.GetRasterBand(i).ReadAsArray() for i in range(1, 4)]
+            self.img_array = np.stack(bands, axis=2)
+        else:
+            raise ValueError('This function only supports images with 1 or 3 bands')
+
+        # 16비트 이미지를 0에서 1 사이의 부동소수점으로 스케일링
+        self.img_array = self.img_array.astype(np.float32) / 65535.0
+
+        self.original_path = imgPath
+        self.height, self.width, self.bands = self.img_array.shape
+        return self.img_array
